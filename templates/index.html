@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="static/style.css"> 
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="chat-header">
+            <h2>Product Chatbot</h2>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <!-- Messages will appear here -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Ask a question...">
+            <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to send user message to the backend
+        function sendMessage() {
+            const userMessage = document.getElementById('chat-input').value;
+            if (!userMessage.trim()) return;  // Don't send empty messages
+
+            // Display user message in the chatbox
+            displayMessage(userMessage, 'user');
+
+            // Send the message to the Flask backend
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the chatbot's response in the chatbox
+                const botResponse = data.response || "Sorry, I couldn't understand that.";
+                displayMessage(botResponse, 'bot');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                displayMessage("Oops! Something went wrong. Please try again.", 'bot');
+            });
+
+            // Clear the input field
+            document.getElementById('chat-input').value = '';
+        }
+
+        // Function to display a message in the chat
+        function displayMessage(message, sender) {
+            const chatBody = document.getElementById('chat-body');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender + '-message');
+            messageElement.textContent = message;
+            chatBody.appendChild(messageElement);
+
+            // Scroll to the bottom of the chat
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+</body>
+</html>
